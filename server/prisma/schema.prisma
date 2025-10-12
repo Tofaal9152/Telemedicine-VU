@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  name               String
+  password           String?
+  hashedRefreshToken String?
+  role               Role     @default(PATIENT)
+  age                String?
+  gender             Gender?
+  imageUrl           String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  doctor       Doctor?
+  patient      Patient?
+  admin        Admin?
+  Message      Message[]
+  Notification Notification[]
+}
+
+model Doctor {
+  id                 String  @id @default(cuid())
+  userId             String  @unique
+  specialty          String
+  bio                String
+  experience         String
+  isApproved         Boolean @default(false)
+  visitFee           Float   @default(500)
+  registrationNumber String?
+
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Appointment  Appointment[]
+  Prescription Prescription[]
+  Message      Message[]
+}
+
+model Patient {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Appointment  Appointment[]
+  Prescription Prescription[]
+  Message      Message[]
+}
+
+model Admin {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  patientId String
+  doctorId  String
+  tranId    String?           @unique
+  status    AppointmentStatus
+  createdAt DateTime          @default(now())
+
+  patient      Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor       Doctor        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  Prescription Prescription?
+}
+
+model Prescription {
+  id            String      @id @default(cuid())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointmentId String      @unique
+  doctor        Doctor      @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctorId      String
+  patient       Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId     String
+
+  symptoms    String
+  diagnosis   String
+  medications Json
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  timestamp DateTime @default(now())
+
+  userId    String
+  doctorId  String
+  patientId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String               @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean              @default(false)
+  createdAt DateTime             @default(now())
+  priority  NotificationPriority @default(NORMAL)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  PATIENT
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum AppointmentStatus {
+  PAID
+  PENDING
+  FAILED
+  CANCELED
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  MEDIUM
+  HIGH
+}
