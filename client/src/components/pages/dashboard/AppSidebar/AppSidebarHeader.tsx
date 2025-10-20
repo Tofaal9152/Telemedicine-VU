@@ -1,10 +1,10 @@
+import AppImage from "@/components/ui/AppImage";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import imagePath from "@/constants/imagePath";
-import Image from "next/image";
 import Link from "next/link";
 
 export function AppSidebarHeader({ session }: { session: any }) {
@@ -21,7 +21,7 @@ export function AppSidebarHeader({ session }: { session: any }) {
             size="lg"
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground "
           >
-            <Image
+            <AppImage
               src={activeTeam.logo}
               width={35}
               height={35}

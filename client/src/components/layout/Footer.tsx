@@ -1,6 +1,5 @@
 import { teamMembers } from "@/constants/FooterData";
-import Image from "next/image";
-
+import AppImage from "../ui/AppImage";
 const Footer = () => {
   return (
     <footer className="bg-white/95 dark:bg-gray-900/95  py-12">
@@ -16,7 +15,7 @@ const Footer = () => {
           {teamMembers.map((member, index) => (
             <div key={index} className="text-center group">
               <div className="relative mb-4 mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 group-hover:border-blue-400 transition-colors">
-                <Image
+                <AppImage
                   src={member.image}
                   alt={member.name}
                   fill

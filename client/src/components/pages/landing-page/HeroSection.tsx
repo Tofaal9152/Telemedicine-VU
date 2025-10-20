@@ -2,10 +2,10 @@
 
 import type React from "react";
 
+import AppImage from "@/components/ui/AppImage";
 import imagePath from "@/constants/imagePath";
 import GetProfileData from "@/hooks/GetProfileData";
 import { Award, Calendar, CheckCircle, Mail, User, Users } from "lucide-react";
-import Image from "next/image";
 
 const HeroSection = ({ role }: { role: any }) => {
   const { query } = GetProfileData({ role });
@@ -39,7 +39,7 @@ const HeroSection = ({ role }: { role: any }) => {
         <div className="w-full lg:w-1/3 flex justify-center group">
           <div className="relative">
            
-            <Image
+            <AppImage
               src={userData?.imageUrl || imageUrl}
               width={240}
               height={240}

@@ -10,6 +10,7 @@ export function FileUploadAction() {
         },
       }),
     onSuccess: (res: any) => {
+      console.log(res)
       console.log("File uploaded successfully:", res?.data?.url);
     },
     onError: (error) => {
@@ -30,3 +31,4 @@ export async function FileUploadActionServer(data: any) {
   );
   return res?.data?.url || "";
 }
+  

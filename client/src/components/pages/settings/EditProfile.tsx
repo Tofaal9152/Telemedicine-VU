@@ -2,9 +2,9 @@
 import { FileUploadAction } from "@/actions/file-upload";
 import { useUpdateProfile } from "@/actions/profile/EditProfileAction";
 import { SmartForm, SmartFormField } from "@/components/smart-form";
+import AppImage from "@/components/ui/AppImage";
 import { Input } from "@/components/ui/input";
 import GetProfileData from "@/hooks/GetProfileData";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -66,7 +66,7 @@ const EditProfile = ({ role }: { role: any }) => {
   return (
     <div>
       <div className="flex flex-col space-y-4 items-center mb-6 ring-2 ring-white/20 p-4 rounded-2xl shadow-2xl">
-        <Image
+        <AppImage
           src={previewUrl || query.data.imageUrl}
           alt="Profile Picture"
           width={100}

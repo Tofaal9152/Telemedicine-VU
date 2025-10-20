@@ -3,10 +3,10 @@ const imagePath = {
   imageNotAvailable: "https://res.cloudinary.com/dmfskphxq/image/upload/v1754346951/telemedicine/pn9fhrekf3qwpngiueow.png",
   doctorImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1754346884/telemedicine/f6m8ibwhcthmkvpq5ufb.png",
   patientImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1754346906/telemedicine/f9kmez2xfjsqth5a2jla.png",
-  shamimVaiImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1755097547/telemedicine/zea6rhfjnfgychzsf5l7.jpg",
-  AmritaApuImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1755097572/telemedicine/lhxxrdj9hbx8g0cyrwdd.jpg",
-  ShuvrotoVaiImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1755097602/telemedicine/cnfzrbooxlgbufqsjtra.jpg",
-  ProfessorImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1755097652/telemedicine/bs8qtbc26dhp1ovrea1h.jpg",
+  atikVaiImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1760947631/telemedicine/tj9d99ykflip8yh5jfjt.jpg",
+  summaApuImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1760947699/telemedicine/rusjmcndblcy7wdhh9ip.jpg",
+  afsanaApuImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1760947792/telemedicine/nma2o4qtxxtw3fkeh20j.jpg",
+  ProfessorImage: "https://res.cloudinary.com/dmfskphxq/image/upload/v1760947751/telemedicine/xvbucxalwpxxo4kg0qjh.jpg",
 };
 
 export default imagePath;
