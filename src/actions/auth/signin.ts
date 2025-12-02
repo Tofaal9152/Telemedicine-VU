@@ -1,4 +1,4 @@
-// "use server";
+"use server";
 import HandleError from "@/lib/errorHandle";
 import { CreateSession } from "@/lib/session";
 import { validateForm } from "@/lib/validateForm";
@@ -55,5 +55,4 @@ export const SigninAction = async (
     console.log("Error during sign-in:", error);
     return HandleError(error);
   }
-  redirect("/");
 };
