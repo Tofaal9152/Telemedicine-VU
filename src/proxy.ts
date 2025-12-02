@@ -4,7 +4,7 @@ import { getSession } from "@/lib/session";
 // Routes accessible without authentication
 const publicRoutes = ["/", "/ambulance", "/auth/signin", "/auth/signup"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const session = await getSession(); 
   const user = session?.user;
   const isAdmin = user?.role === "ADMIN";

@@ -1,15 +1,37 @@
 import { useEffect, useRef } from "react";
 import MessageItem from "./MessageItem";
 
-const MessageList = ({ messages, userId }: { messages: any[]; userId: string }) => {
-  const endRef = useRef<HTMLDivElement | null>(null);
+const MessageList = ({
+  messages,
+  userId,
+}: {
+  messages: any[];
+  userId: string;
+}) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = containerRef.current;
+    if (!el) return;
+    try {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    } catch {
+      el.scrollTop = el.scrollHeight;
+    }
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+    <div
+      ref={containerRef}
+      className="
+        flex-1 min-h-0 overflow-y-auto 
+        no-scrollba
+        
+        px-4 py-3
+        bg-gradient-to-b from-white/5 via-white/0 to-white/5
+        space-y-3
+      "
+    >
       {messages.map((msg, idx) => (
         <MessageItem
           key={msg.id || idx}
@@ -17,7 +39,7 @@ const MessageList = ({ messages, userId }: { messages: any[]; userId: string }) 
           isOutgoing={msg.userId === userId}
         />
       ))}
-      <div ref={endRef} />
+      <div />
     </div>
   );
 };
