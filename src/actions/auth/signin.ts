@@ -5,7 +5,6 @@ import { validateForm } from "@/lib/validateForm";
 import { LoginType } from "@/types/auth";
 import { LoginSchema } from "@/zod-schemas/auth";
 import axios from "axios";
-import { redirect } from "next/navigation";
 
 export const SigninAction = async (
   previousState: LoginType,
@@ -51,6 +50,10 @@ export const SigninAction = async (
       accessToken: res?.data?.accessToken || "",
       refreshToken: res?.data?.refreshToken || "",
     });
+    return {
+      errors: {},
+      success: true,
+    };
   } catch (error) {
     console.log("Error during sign-in:", error);
     return HandleError(error);

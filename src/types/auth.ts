@@ -4,6 +4,7 @@ export type LoginType = {
     password?: string[];
     formError?: string[];
   };
+  success?: boolean;
 };
 
 export type PatientRegisterType = {
