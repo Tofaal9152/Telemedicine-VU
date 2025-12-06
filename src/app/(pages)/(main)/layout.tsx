@@ -12,11 +12,17 @@ export default function MainLayout({
   return (
     <WebSocketProvider>
       <PeerProvider>
-        <div>
-          <div className="bg-gradient-to-br from-[#007b8f] via-[#00a085] to-[#00c49a] text-white relative overflow-hidden pb-24 md:pb-0">
-            <Navbar />
+        {/* FULL PAGE FLEX LAYOUT */}
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#007b8f] via-[#00a085] to-[#00c49a] text-white">
+          {/* TOP NAVBAR */}
+          <Navbar />
+
+          {/* CONTENT (TAKES AVAILABLE SPACE) */}
+          <main className="flex-1 relative overflow-hidden pb-24 md:pb-0">
             <MainLayoutCom>{children}</MainLayoutCom>
-          </div>
+          </main>
+
+          {/* FIXED FOOTER POSITION */}
           <Footer />
         </div>
       </PeerProvider>

@@ -19,7 +19,7 @@ const SigninForm = () => {
       toast.success("Login successful!");
       router.replace("/");
     }
-  }, [state.success, router]);
+  }, [state.success, router, isPending]);
   return (
     <form action={action} className="w-full">
       <Input name="email" type="email" placeholder="Email" className="mb-4" />
