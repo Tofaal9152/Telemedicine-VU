@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 interface NavItem {
   name: string;
@@ -16,14 +15,6 @@ interface BottomTabNavigationProps {
 
 const BottomTabNavigation = ({ navItems }: BottomTabNavigationProps) => {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
   return (
     <>
       {/* Bottom Tab Navigation - Mobile Only */}

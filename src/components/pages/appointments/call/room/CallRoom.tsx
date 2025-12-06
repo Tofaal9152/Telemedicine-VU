@@ -136,6 +136,7 @@ const CallRoom = ({ room }: { room: string }) => {
 
   // Get Media on Mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     getUserMediaStream();
   }, [getUserMediaStream]);
 

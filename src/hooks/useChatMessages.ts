@@ -14,6 +14,7 @@ export const useChatMessages = (room: string, session: any, data: any) => {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (PrevChat.data) setMessages(PrevChat.data);
   }, [PrevChat.data]);
 

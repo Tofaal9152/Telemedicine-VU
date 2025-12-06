@@ -541,7 +541,7 @@ export function NotificationCenter({
             )}
 
             <div className="max-h-96">
-              <NotificationList />
+              {/* <NotificationList /> */}
             </div>
           </div>
         </PopoverContent>
@@ -608,7 +608,7 @@ export function NotificationCenter({
       </CardHeader>
 
       <CardContent className="p-0">
-        <NotificationList />
+        {/* <NotificationList /> */}
       </CardContent>
     </Card>
   )
