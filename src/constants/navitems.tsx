@@ -37,18 +37,18 @@ export const NavbarNavItems = (session: any) => {
               link: "/payments",
               icon: <CreditCard size={18} />,
             },
-            {
-              name: "Settings",
-              link: "/settings",
-              icon: <Settings size={18} />,
-            },
+            // {
+            //   name: "Settings",
+            //   link: "/settings",
+            //   icon: <Settings size={18} />,
+            // },
           ]
         : []),
-      {
-        name: "Ambulance",
-        link: "/ambulance",
-        icon: <PlusCircleIcon size={18} />,
-      },
+      // {
+      //   name: "Ambulance",
+      //   link: "/ambulance",
+      //   icon: <PlusCircleIcon size={18} />,
+      // },
     ],
   };
 };
