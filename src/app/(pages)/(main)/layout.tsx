@@ -2,7 +2,7 @@ import Navbar from "@/components/layout/Navbar/Navbar";
 import MainLayoutCom from "./MainLayout";
 import { PeerProvider } from "@/context/Peer";
 import { WebSocketProvider } from "@/context/webSocketContext";
-import Footer from "@/components/layout/Footer";
+// import Footer from "@/components/layout/Footer";
 
 export default function MainLayout({
   children,
@@ -23,7 +23,7 @@ export default function MainLayout({
           </main>
 
           {/* FIXED FOOTER POSITION */}
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </PeerProvider>
     </WebSocketProvider>
