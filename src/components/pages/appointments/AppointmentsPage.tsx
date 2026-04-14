@@ -19,9 +19,9 @@ const AppointmentsPage = ({
 }) => {
   const { data, isPending, error, isError } = useFetchData<any>(
     `/appointments/${appointmentId}`,
-    ["appointment", appointmentId]
+    ["appointment", appointmentId],
   );
-console.log(data)
+  console.log(data);
   return (
     <LoadingErrorWrapper isLoading={isPending} error={error} isError={isError}>
       <Tabs defaultValue="profile" className="flex flex-col min-h-[70vh]">
@@ -39,7 +39,10 @@ console.log(data)
             Video Call
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="profile" className="flex flex-col flex-1 pb-12 space-y-4">
+        <TabsContent
+          value="profile"
+          className="flex flex-col flex-1 pb-12 space-y-4"
+        >
           {isDoctor ? (
             <DoctorData data={data} appointmentId={appointmentId} />
           ) : (
@@ -55,7 +58,8 @@ console.log(data)
         </TabsContent>
 
         <TabsContent value="video" className="flex flex-col flex-1 pb-12">
-          <Call data={data} session={session} />
+          {/* <Call data={data} session={session} /> */}
+          <div className="border border-white/20 rounded-lg p-4 flex items-center justify-center font-bold text-3xl">Coming Soon...</div>
         </TabsContent>
       </Tabs>
     </LoadingErrorWrapper>

@@ -20,12 +20,12 @@ const SigninPage = () => {
 
           <SigninForm />
 
-          {/* <p className="text-sm text-blue-200 mt-4">
+          <p className="text-sm text-blue-200 mt-4">
             Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="hover:underline text-blue-300">
               Sign Up
             </Link>
-          </p> */}
+          </p>
         </div>
 
         {/* Right Side: Image */}

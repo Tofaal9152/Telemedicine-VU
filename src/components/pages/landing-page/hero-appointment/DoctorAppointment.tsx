@@ -41,13 +41,13 @@ const DoctorAppointment = ({ item }: { item: any }) => (
       </div>
     </CardContent>
 
-    {/* <CardFooter>
+    <CardFooter>
       <Link href={`/appointments/${item?.id}`} >
         <LoadingButton className="w-full bg-gradient-to-r from-green-500 to-emerald-900 hover:from-green-300 hover:to-emerald-600 transform transition-all duration-200 text-white ">
           View Details 
         </LoadingButton>
       </Link>
-    </CardFooter> */}
+    </CardFooter>
   </Card>
 );
 
