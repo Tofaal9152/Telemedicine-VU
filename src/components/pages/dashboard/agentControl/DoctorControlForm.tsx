@@ -1,15 +1,18 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
-import { useActionState, useEffect } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { CreateDoctorAction } from "@/actions/dashboard/create-doctor";
 import { Button } from "@/components/ui/button";
+import CameraImageCapture from "@/components/shared/CameraImageCapture";
 import SelectGender from "./SelectGender";
 import { Loader } from "lucide-react";
 import SelectDoctorSpeciality from "@/components/shared/selectDoctorSpeciality";
+
 const DoctorControlForm = () => {
+  const [formKey, setFormKey] = useState(0);
   const [state, action, isPending] = useActionState(CreateDoctorAction, {
     errors: {},
   });
@@ -21,11 +24,13 @@ const DoctorControlForm = () => {
       queryClient.invalidateQueries({
         queryKey: ["admin-all-doctors"],
       });
+      startTransition(() => setFormKey((k) => k + 1));
     }
   }, [state.success, state.message, isPending, queryClient]);
 
   return (
     <form
+      key={formKey}
       action={action}
       className="w-full max-w-3xl mx-auto bg-white dark:bg-gray-950 p-6 rounded-lg shadow-md gap-4 grid grid-cols-1"
     >
@@ -43,6 +48,7 @@ const DoctorControlForm = () => {
       {state.errors.password && (
         <p className="text-red-500 text-sm">{state.errors.password}</p>
       )}
+
       <Input name="age" type="number" placeholder="Age" />
       {state.errors.age && (
         <p className="text-red-500 text-sm">{state.errors.age}</p>
@@ -52,7 +58,8 @@ const DoctorControlForm = () => {
       {state.errors.gender && (
         <p className="text-red-500 text-sm">{state.errors.gender}</p>
       )}
-     <SelectDoctorSpeciality/>
+
+      <SelectDoctorSpeciality />
       {state.errors.specialty && (
         <p className="text-red-500 text-sm">{state.errors.specialty}</p>
       )}
@@ -66,10 +73,12 @@ const DoctorControlForm = () => {
       {state.errors.bio && (
         <p className="text-red-500 text-sm">{state.errors.bio}</p>
       )}
+
       <Input name="visitFee" type="number" placeholder="Visit Fee" />
       {state.errors.visitFee && (
         <p className="text-red-500 text-sm">{state.errors.visitFee}</p>
       )}
+
       <Input
         name="registrationNumber"
         type="number"
@@ -80,10 +89,43 @@ const DoctorControlForm = () => {
           {state.errors.registrationNumber}
         </p>
       )}
-      <Input name="imageUrl" type="file" placeholder="Image URL" />
+
+      {/* Profile photo */}
+      <CameraImageCapture
+        name="imageUrl"
+        label="প্রোফাইল ছবি"
+        aspect="square"
+        theme="light"
+      />
       {state.errors.imageUrl && (
         <p className="text-red-500 text-sm">{state.errors.imageUrl}</p>
       )}
+
+      {/* NID front and back side by side */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <CameraImageCapture
+            name="nidFront"
+            label="NID সামনের দিক"
+            aspect="landscape"
+            theme="light"
+          />
+          {state.errors.nidFront && (
+            <p className="text-red-500 text-sm mt-1">{state.errors.nidFront}</p>
+          )}
+        </div>
+        <div>
+          <CameraImageCapture
+            name="nidBack"
+            label="NID পিছনের দিক"
+            aspect="landscape"
+            theme="light"
+          />
+          {state.errors.nidBack && (
+            <p className="text-red-500 text-sm mt-1">{state.errors.nidBack}</p>
+          )}
+        </div>
+      </div>
 
       <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? (

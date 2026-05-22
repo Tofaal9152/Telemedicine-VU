@@ -3,14 +3,14 @@ import apiClient from "@/lib/apiClient";
 import HandleError from "@/lib/errorHandle";
 import { validateForm } from "@/lib/validateForm";
 import { DoctorRegisterType } from "@/types/auth";
-import { DoctorRegisterSchema } from "@/zod-schemas/auth";
+import { DoctorPublicSignupSchema } from "@/zod-schemas/auth";
 import { FileUploadActionServer } from "../file-upload";
 
 export const DoctorSignUpAction = async (
-  previousState: DoctorRegisterType,
+  _: DoctorRegisterType,
   formData: FormData
 ): Promise<DoctorRegisterType> => {
-  const validationErrors = validateForm(DoctorRegisterSchema, formData);
+  const validationErrors = validateForm(DoctorPublicSignupSchema, formData);
 
   if (validationErrors) {
     return validationErrors;
@@ -28,15 +28,22 @@ export const DoctorSignUpAction = async (
       bio: formData.get("bio"),
       visitFee: Number(formData.get("visitFee")),
       registrationNumber: formData.get("registrationNumber"),
+      otp: formData.get("otp"),
     };
     const imageFile = formData.get("imageUrl");
     if (imageFile && (imageFile as File).size > 0) {
       payload.imageUrl = await FileUploadActionServer(imageFile as File);
     }
-    console.log("Payload for doctor signup:", payload);
-    const res = await apiClient.post(`/auth/doctor/signup`, payload);
+    const nidFrontFile = formData.get("nidFront");
+    if (nidFrontFile && (nidFrontFile as File).size > 0) {
+      payload.nidFront = await FileUploadActionServer(nidFrontFile as File);
+    }
+    const nidBackFile = formData.get("nidBack");
+    if (nidBackFile && (nidBackFile as File).size > 0) {
+      payload.nidBack = await FileUploadActionServer(nidBackFile as File);
+    }
+    await apiClient.post(`/auth/doctor/signup`, payload);
 
-    console.log(res.data);
     return {
       success: true,
       message: "Doctor registered successfully",

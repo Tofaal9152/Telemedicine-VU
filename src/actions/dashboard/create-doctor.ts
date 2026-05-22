@@ -33,6 +33,14 @@ export const CreateDoctorAction = async (
     if (imageFile && (imageFile as File).size > 0) {
       payload.imageUrl = await FileUploadActionServer(imageFile as File);
     }
+    const nidFrontFile = formData.get("nidFront");
+    if (nidFrontFile && (nidFrontFile as File).size > 0) {
+      payload.nidFront = await FileUploadActionServer(nidFrontFile as File);
+    }
+    const nidBackFile = formData.get("nidBack");
+    if (nidBackFile && (nidBackFile as File).size > 0) {
+      payload.nidBack = await FileUploadActionServer(nidBackFile as File);
+    }
     await apiClient.post(`/admin/doctor`, payload);
 
     return {

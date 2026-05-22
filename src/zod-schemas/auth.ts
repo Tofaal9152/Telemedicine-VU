@@ -5,6 +5,10 @@ export const LoginSchema = z.object({
   password: z.string().min(1, "please enter a valid password"),
 });
 
+const otpField = z
+  .string()
+  .length(6, "OTP must be exactly 6 digits");
+
 export const PatientRegisterSchema = z.object({
   name: z.string().min(1, "Please enter a valid name"),
   email: z.string().email("Please enter a valid email"),
@@ -14,6 +18,11 @@ export const PatientRegisterSchema = z.object({
     required_error: "Please select a valid gender",
   }),
 });
+
+export const PatientPublicSignupSchema = PatientRegisterSchema.extend({
+  otp: otpField,
+});
+
 export const DoctorRegisterSchema = z.object({
   name: z.string().min(1, "Please enter a valid name"),
   email: z.string().email("Please enter a valid email"),
@@ -29,4 +38,8 @@ export const DoctorRegisterSchema = z.object({
   registrationNumber: z
     .string()
     .min(1, "Please enter a valid BMDC registration number"),
+});
+
+export const DoctorPublicSignupSchema = DoctorRegisterSchema.extend({
+  otp: otpField,
 });

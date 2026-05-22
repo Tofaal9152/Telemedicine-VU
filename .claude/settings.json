@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(Get-ChildItem -Path \"e:\\\\CSE\\\\MY_CLIENT\\\\Telemedicine-VU\\\\client\\\\src\" -Directory)",
+      "PowerShell(Get-ChildItem -Path \"e:\\\\CSE\\\\MY_CLIENT\\\\Telemedicine-VU\\\\client\\\\src\" -Recurse -Directory | Where-Object { $_.Name -match \"\\(dashboard|agentControl|admin\\)\" } | Select-Object -ExpandProperty FullName)"
+    ]
+  }
+}

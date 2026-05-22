@@ -58,8 +58,8 @@ const AppointmentsPage = ({
         </TabsContent>
 
         <TabsContent value="video" className="flex flex-col flex-1 pb-12">
-          {/* <Call data={data} session={session} /> */}
-          <div className="border border-white/20 rounded-lg p-4 flex items-center justify-center font-bold text-3xl">Coming Soon...</div>
+          <Call data={data} session={session} />
+          {/* <div className="border border-white/20 rounded-lg p-4 flex items-center justify-center font-bold text-3xl">Coming Soon...</div> */}
         </TabsContent>
       </Tabs>
     </LoadingErrorWrapper>

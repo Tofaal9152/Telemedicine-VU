@@ -15,6 +15,9 @@ export type PatientRegisterType = {
     age?: string[];
     gender?: string[];
     imageUrl?: string[];
+    nidFront?: string[];
+    nidBack?: string[];
+    otp?: string[];
     formError?: string[];
   };
 };
@@ -33,6 +36,9 @@ export type DoctorRegisterType = {
     visitFee?: string[];
     registrationNumber?: string[];
     imageUrl?: string[];
+    nidFront?: string[];
+    nidBack?: string[];
+    otp?: string[];
     formError?: string[];
   };
 };

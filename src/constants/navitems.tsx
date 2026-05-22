@@ -27,28 +27,32 @@ export const NavbarNavItems = (session: any) => {
         : []),
       ...(session
         ? [
-            {
-              name: "Search",
-              link: "/search",
-              icon: <Search size={18} />,
-            },
+          ...(session?.user?.role === "PATIENT"
+            ? [
+                {
+                  name: "Search",
+                  link: "/search",
+                  icon: <Search size={18} />,
+                },
+              ]
+            : []),
             {
               name: "Payments",
               link: "/payments",
               icon: <CreditCard size={18} />,
             },
-            // {
-            //   name: "Settings",
-            //   link: "/settings",
-            //   icon: <Settings size={18} />,
-            // },
+            {
+              name: "Settings",
+              link: "/settings",
+              icon: <Settings size={18} />,
+            },
           ]
         : []),
-      // {
-      //   name: "Ambulance",
-      //   link: "/ambulance",
-      //   icon: <PlusCircleIcon size={18} />,
-      // },
+      {
+        name: "Ambulance",
+        link: "/ambulance",
+        icon: <PlusCircleIcon size={18} />,
+      },
     ],
   };
 };

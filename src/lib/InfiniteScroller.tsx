@@ -12,6 +12,7 @@ type InfiniteScrollerProps<T> = {
   isError: boolean;
   error: unknown;
   renderItem: (item: T) => ReactNode;
+  className?: string;
 };
 
 export function InfiniteScroller<T>({
@@ -22,8 +23,8 @@ export function InfiniteScroller<T>({
   isLoading,
   isError,
   error,
-
   renderItem,
+  className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
 }: InfiniteScrollerProps<T>) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -49,29 +50,39 @@ export function InfiniteScroller<T>({
 
   if (isLoading) {
     return (
-      <Loader className="w-8 h-8 animate-spin mx-auto my-4 text-gray-500" />
+      <div className="flex items-center justify-center py-16">
+        <Loader className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <p className="text-center text-red-500">
+      <p className="text-center text-red-500 py-8">
         Error loading data: {(error as Error).message}
+      </p>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <p className="text-center text-gray-400 dark:text-gray-500 py-16">
+        No items found.
       </p>
     );
   }
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map(renderItem)}
-      </div>
+      <div className={className}>{items.map(renderItem)}</div>
 
-      <div ref={loadMoreRef} className="py-4 text-center">
+      <div ref={loadMoreRef} className="py-6 text-center">
         {isFetchingNextPage && (
-          <Loader className="w-8 h-8 animate-spin mx-auto text-gray-500" />
+          <Loader className="w-6 h-6 animate-spin mx-auto text-gray-400" />
         )}
-        {!hasNextPage && <p className="text-white">No more items</p>}
+        {!hasNextPage && items.length > 0 && (
+          <p className="text-xs text-gray-400 dark:text-gray-600">— সব দেখা হয়েছে —</p>
+        )}
       </div>
     </>
   );
