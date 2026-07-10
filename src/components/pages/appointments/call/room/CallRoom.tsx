@@ -2,15 +2,43 @@
 
 import { usePeerStore } from "@/context/Peer";
 import { useSocket } from "@/hooks/useSocket";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import CallControls from "./CallControls";
 import VideoPlayer from "./VideoPlayer";
 
-const CallRoom = ({ room }: { room: string }) => {
+type UserJoinedPayload = {
+  recipientEmail: string;
+  socketId: string;
+};
+
+type IncomingCallPayload = {
+  senderEmail: string;
+  senderSocketId: string;
+  offer: RTCSessionDescriptionInit;
+};
+
+type CallAcceptedPayload = {
+  senderSocketId?: string;
+  answer: RTCSessionDescriptionInit;
+};
+
+type IceCandidatePayload = {
+  senderSocketId?: string;
+  candidate: RTCIceCandidateInit;
+};
+
+const stopStream = (stream: MediaStream | null) => {
+  stream?.getTracks().forEach((track) => track.stop());
+};
+
+const CallRoom = ({ room, session }: { room: string; session: any }) => {
   const socket = useSocket();
   const [myStream, setMyStream] = useState<MediaStream | null>(null);
-  const [remoteEmail, setRemoteEmail] = useState<string | null>(null);
+  const remoteSocketIdRef = useRef<string | null>(null);
+  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+  const hasJoinedRoomRef = useRef(false);
+  const mediaErrorShownRef = useRef(false);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCamOn, setIsCamOn] = useState(true);
 
@@ -18,111 +46,131 @@ const CallRoom = ({ room }: { room: string }) => {
     createOffer,
     CreateAnswer,
     setRemoteDescription,
+    addIceCandidate,
     sendStream,
     remoteStream,
     peer,
     handleEndCallResetAll,
   } = usePeerStore();
 
-  // New User Joined
+  const currentUserEmail = session?.user?.email;
+  const currentUserName = session?.user?.name ?? "Anonymous";
+  const currentUserRole = session?.user?.role ?? "guest";
+
+  const updateRemotePeer = useCallback((socketId: string | null) => {
+    remoteSocketIdRef.current = socketId;
+  }, []);
+
+  const flushIceCandidates = useCallback(async () => {
+    if (!peer?.remoteDescription) return;
+
+    const candidates = [...pendingIceCandidatesRef.current];
+    pendingIceCandidatesRef.current = [];
+
+    for (const candidate of candidates) {
+      await addIceCandidate(candidate);
+    }
+  }, [addIceCandidate, peer]);
+
+  const showMediaError = useCallback((message: string) => {
+    if (mediaErrorShownRef.current) return;
+    mediaErrorShownRef.current = true;
+    toast.error(message);
+  }, []);
+
   const handleUserJoined = useCallback(
-    async (data: { recipientEmail: string }) => {
+    async (data: UserJoinedPayload) => {
+      if (!data.socketId || data.socketId === socket.id) return;
+
+      updateRemotePeer(data.socketId);
       toast.success(`User ${data.recipientEmail} joined the call.`, {
         duration: 2000,
         position: "top-right",
       });
+
       const offer = await createOffer();
-      setTimeout(() => {
-        socket.emit("call-user", {
-          offer,
-          recipientEmail: data.recipientEmail,
-        });
-      }, 1000);
-      setRemoteEmail(data.recipientEmail);
+      socket.emit("call-user", {
+        offer,
+        recipientSocketId: data.socketId,
+      });
     },
-    [createOffer, socket]
+    [createOffer, socket, updateRemotePeer]
   );
 
-  // Incoming Call
   const handleIncomingCall = useCallback(
-    async (data: { senderEmail: string; offer: RTCSessionDescriptionInit }) => {
-      const { senderEmail, offer } = data;
+    async (data: IncomingCallPayload) => {
+      const { senderEmail, senderSocketId, offer } = data;
+      updateRemotePeer(senderSocketId);
+
       const answer = await CreateAnswer(offer);
+      await flushIceCandidates();
+
       socket.emit("call-accepted", {
         answer,
-        senderEmail,
+        recipientSocketId: senderSocketId,
       });
-      setRemoteEmail(senderEmail);
+
+      toast.success(`Connected with ${senderEmail}`, {
+        duration: 2000,
+        position: "top-right",
+      });
     },
-    [CreateAnswer, socket]
+    [CreateAnswer, flushIceCandidates, socket, updateRemotePeer]
   );
 
-  // Call Accepted
   const handleCallAccepted = useCallback(
-    async (data: { answer: RTCSessionDescriptionInit }) => {
+    async (data: CallAcceptedPayload) => {
+      if (data.senderSocketId) updateRemotePeer(data.senderSocketId);
       await setRemoteDescription(data.answer);
+      await flushIceCandidates();
     },
-    [setRemoteDescription]
+    [flushIceCandidates, setRemoteDescription, updateRemotePeer]
   );
 
-  // Get Media Stream
-  const getUserMediaStream = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      setMyStream(stream);
-    } catch (error) {
-      console.error("Error accessing media devices:", error);
-    }
-  }, []);
+  const handleIceCandidate = useCallback(
+    async (data: IceCandidatePayload) => {
+      if (!data.candidate) return;
+      if (data.senderSocketId) updateRemotePeer(data.senderSocketId);
 
-  // User Left
-  // const handleUserLeftBroadcast = useCallback(
-  //   (data: { message: string }) => {
-  //     setRemoteEmail(null);
-  //     setRemoteStream(null);
-  //     toast.success(data.message, {
-  //       duration: 2000,
-  //       position: "top-right",
-  //     });
-  //   },
-  //   [setRemoteStream]
-  // );
-  // user left message broadcast
-  // Socket Events
-  const handleEndCall = useCallback(
-    (data: { message: string }) => {
-      if (myStream) {
-        myStream.getTracks().forEach((track) => track.stop());
-        setMyStream(null);
+      if (!peer?.remoteDescription) {
+        pendingIceCandidatesRef.current.push(data.candidate);
+        return;
       }
 
-      handleEndCallResetAll();
-      setRemoteEmail(null);
+      await addIceCandidate(data.candidate);
+    },
+    [addIceCandidate, peer, updateRemotePeer]
+  );
+
+  const handleEndCall = useCallback(
+    (data: { message: string }) => {
+      stopStream(myStream);
       setMyStream(null);
+      handleEndCallResetAll();
+      updateRemotePeer(null);
+      pendingIceCandidatesRef.current = [];
       toast.error(data.message, {
         duration: 2000,
         position: "top-right",
       });
       window.location.href = "/";
     },
-    [handleEndCallResetAll, myStream, setMyStream]
+    [handleEndCallResetAll, myStream, updateRemotePeer]
   );
+
   useEffect(() => {
     if (!socket) return;
     socket.on("user-joined", handleUserJoined);
     socket.on("incoming-call", handleIncomingCall);
     socket.on("call-accepted", handleCallAccepted);
-    // socket.on("user-left", handleUserLeftBroadcast);
+    socket.on("ice-candidate", handleIceCandidate);
     socket.on("end-call", handleEndCall);
 
     return () => {
       socket.off("user-joined", handleUserJoined);
       socket.off("incoming-call", handleIncomingCall);
       socket.off("call-accepted", handleCallAccepted);
-      // socket.off("user-left", handleUserLeftBroadcast);
+      socket.off("ice-candidate", handleIceCandidate);
       socket.off("end-call", handleEndCall);
     };
   }, [
@@ -130,26 +178,84 @@ const CallRoom = ({ room }: { room: string }) => {
     handleUserJoined,
     handleIncomingCall,
     handleCallAccepted,
+    handleIceCandidate,
     handleEndCall,
-    // handleUserLeftBroadcast,
   ]);
 
-  // Get Media on Mount
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    getUserMediaStream();
-  }, [getUserMediaStream]);
+    if (!socket || !currentUserEmail || hasJoinedRoomRef.current) return;
 
-  // Negotiation Needed
+    hasJoinedRoomRef.current = true;
+    socket.emit("join-room", {
+      room,
+      name: currentUserName,
+      role: currentUserRole,
+      email: currentUserEmail,
+    });
+  }, [socket, room, currentUserEmail, currentUserName, currentUserRole]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let acquiredStream: MediaStream | null = null;
+
+    const requestMedia = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        showMediaError(
+          "Camera and microphone require HTTPS on mobile. Open the app with HTTPS or test from localhost."
+        );
+        return;
+      }
+
+      try {
+        acquiredStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+      } catch (error) {
+        const errorName = error instanceof DOMException ? error.name : "";
+        console.error("Error accessing media devices:", error);
+
+        if (errorName === "NotReadableError") {
+          showMediaError(
+            "Camera or microphone is already in use. Close other call tabs/apps, then rejoin."
+          );
+        } else {
+          showMediaError(
+            "Camera or microphone permission is required for video call."
+          );
+        }
+        return;
+      }
+
+      if (cancelled) {
+        stopStream(acquiredStream);
+        return;
+      }
+
+      setIsMicOn(acquiredStream.getAudioTracks().some((track) => track.enabled));
+      setIsCamOn(acquiredStream.getVideoTracks().some((track) => track.enabled));
+      setMyStream(acquiredStream);
+    };
+
+    requestMedia();
+
+    return () => {
+      cancelled = true;
+      stopStream(acquiredStream);
+    };
+  }, [showMediaError]);
+
   const handleNegotiationNeeded = useCallback(async () => {
-    if (!peer) return;
+    const recipientSocketId = remoteSocketIdRef.current;
+    if (!peer || !recipientSocketId || peer.signalingState !== "stable") return;
+
     const localOffer = await peer.createOffer();
     await peer.setLocalDescription(localOffer);
     socket.emit("call-user", {
       offer: localOffer,
-      recipientEmail: remoteEmail,
+      recipientSocketId,
     });
-  }, [peer, remoteEmail, socket]);
+  }, [peer, socket]);
 
   useEffect(() => {
     if (!peer) return;
@@ -160,9 +266,29 @@ const CallRoom = ({ room }: { room: string }) => {
   }, [peer, handleNegotiationNeeded]);
 
   useEffect(() => {
+    if (!peer) return;
+
+    const handleLocalIceCandidate = (event: RTCPeerConnectionIceEvent) => {
+      const recipientSocketId = remoteSocketIdRef.current;
+      if (!event.candidate || !recipientSocketId) return;
+
+      socket.emit("ice-candidate", {
+        recipientSocketId,
+        candidate: event.candidate.toJSON(),
+      });
+    };
+
+    peer.addEventListener("icecandidate", handleLocalIceCandidate);
+
+    return () => {
+      peer.removeEventListener("icecandidate", handleLocalIceCandidate);
+    };
+  }, [peer, socket]);
+
+  useEffect(() => {
     if (myStream) sendStream(myStream);
   }, [myStream, sendStream]);
-  // Toggle Mic
+
   const toggleAudio = () => {
     if (!myStream) return;
     myStream.getAudioTracks().forEach((track) => {
@@ -171,7 +297,6 @@ const CallRoom = ({ room }: { room: string }) => {
     });
   };
 
-  // Toggle Camera
   const toggleVideo = () => {
     if (!myStream) return;
     myStream.getVideoTracks().forEach((track) => {
@@ -179,7 +304,7 @@ const CallRoom = ({ room }: { room: string }) => {
       setIsCamOn(track.enabled);
     });
   };
-  // stop call
+
   const endCall = () => {
     socket.emit("end-call", { room });
   };

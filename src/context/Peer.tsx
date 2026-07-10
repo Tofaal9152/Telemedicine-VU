@@ -16,12 +16,30 @@ interface PeerContextType {
     offer: RTCSessionDescriptionInit
   ) => Promise<RTCSessionDescriptionInit>;
   setRemoteDescription: (answer: RTCSessionDescriptionInit) => Promise<void>;
+  addIceCandidate: (candidate: RTCIceCandidateInit) => Promise<void>;
   remoteStream: MediaStream | null;
   sendStream: (stream: MediaStream) => void;
   handleEndCallResetAll: () => void;
 }
 
 const peerContext = createContext<PeerContextType | null>(null);
+
+const createPeerConnection = () => {
+  if (typeof window === "undefined" || !window.RTCPeerConnection) {
+    return null;
+  }
+
+  return new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:global.stun.twilio.com:3478",
+        ],
+      },
+    ],
+  });
+};
 
 export const usePeerStore = () => {
   const context = useContext(peerContext);
@@ -33,21 +51,19 @@ export const usePeerStore = () => {
 
 export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [peer, setPeer] = useState<RTCPeerConnection | null>(null);
+  const [peer, setPeer] = useState<RTCPeerConnection | null>(() =>
+    createPeerConnection()
+  );
 
   useEffect(() => {
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: [
-            "stun:stun.l.google.com:19302",
-            "stun:global.stun.twilio.com:3478",
-          ],
-        },
-      ],
-    });
-    setPeer(pc);
-  }, []);
+    if (!peer) setPeer(createPeerConnection());
+  }, [peer]);
+
+  useEffect(() => {
+    return () => {
+      peer?.close();
+    };
+  }, [peer]);
 
   const createOffer = useCallback(async () => {
     if (!peer) throw new Error("Peer connection not ready yet");
@@ -60,6 +76,7 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
       throw error;
     }
   }, [peer]);
+
   const CreateAnswer = useCallback(
     async (offer: RTCSessionDescriptionInit) => {
       if (!peer) throw new Error("Peer connection not ready yet");
@@ -80,7 +97,6 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
     async (answer: RTCSessionDescriptionInit) => {
       if (!peer) throw new Error("Peer connection not ready yet");
 
-      // Prevent double-setting remote description
       const currentState = peer.signalingState;
       if (
         currentState !== "have-local-offer" &&
@@ -99,6 +115,21 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
     },
     [peer]
   );
+
+  const addIceCandidate = useCallback(
+    async (candidate: RTCIceCandidateInit) => {
+      if (!peer) throw new Error("Peer connection not ready yet");
+
+      try {
+        await peer.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (error) {
+        console.error("Error adding ICE candidate:", error);
+        throw error;
+      }
+    },
+    [peer]
+  );
+
   const sendStream = useCallback(
     (stream: MediaStream) => {
       try {
@@ -106,7 +137,15 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
 
         const tracks = stream.getTracks();
         for (const track of tracks) {
-          peer.addTrack(track, stream);
+          const existingSender = peer
+            .getSenders()
+            .find((sender) => sender.track?.kind === track.kind);
+
+          if (existingSender) {
+            existingSender.replaceTrack(track);
+          } else {
+            peer.addTrack(track, stream);
+          }
         }
       } catch (error: any) {
         toast.error("Error sending stream: " + error.message);
@@ -125,13 +164,13 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!peer) return;
-    peer.addEventListener("track", (event) => handleTrackEvent(event));
+    peer.addEventListener("track", handleTrackEvent);
 
     return () => {
       peer.removeEventListener("track", handleTrackEvent);
     };
   }, [peer, handleTrackEvent]);
-  // Reset Peer Connection
+
   const handleEndCallResetAll = useCallback(() => {
     if (peer) {
       peer.close();
@@ -142,7 +181,7 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     setRemoteStream(null);
-    setPeer(null);
+    setPeer(createPeerConnection());
   }, [peer, remoteStream]);
 
   const contextValue = useMemo(
@@ -151,6 +190,7 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
       createOffer,
       CreateAnswer,
       setRemoteDescription,
+      addIceCandidate,
       sendStream,
       remoteStream,
       handleEndCallResetAll,
@@ -160,6 +200,7 @@ export const PeerProvider = ({ children }: { children: React.ReactNode }) => {
       createOffer,
       CreateAnswer,
       setRemoteDescription,
+      addIceCandidate,
       sendStream,
       remoteStream,
       handleEndCallResetAll,

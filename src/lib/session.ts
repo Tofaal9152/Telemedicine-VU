@@ -20,7 +20,7 @@ export async function CreateSession(payload: Session) {
 
   cookieStore.set("session", session, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
     sameSite: "lax",
     path: "/",
@@ -76,3 +76,4 @@ export async function updateTokens({
 
   await CreateSession(newPayload);
 }
+

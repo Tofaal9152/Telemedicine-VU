@@ -104,7 +104,7 @@ const SearchDoctorsContent = () => {
       </div>
 
       {/* Content area */}
-      <div className="space-y-3 md:space-y-4">
+      <div>
         {isLoading && (
           <p className="text-sm md:text-base text-white/80">
             Loading doctors...
@@ -124,12 +124,14 @@ const SearchDoctorsContent = () => {
             No doctors found for this search.
           </p>
         )}
-
-        {!isLoading &&
-          !isError &&
-          doctors.map((item: any) => (
-            <SearchDoctorItem key={item.id} item={item} />
-          ))}
+  
+        {!isLoading && !isError && doctors.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {doctors.map((item: any) => (
+              <SearchDoctorItem key={item.id} item={item} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Pagination controls */}

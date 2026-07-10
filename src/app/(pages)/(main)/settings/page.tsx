@@ -6,7 +6,7 @@ const page = async () => {
   const session = await getSession();
   return (
     <div className="pb-20 lg:pb-0">
-      <div className="space-y-10">
+      <div className="space-y-10 pb-10">
         <div >
           <div className="text-center">
             <h2 className="text-2xl font-bold ">Edit Profile</h2>

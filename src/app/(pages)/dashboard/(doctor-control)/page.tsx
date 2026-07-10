@@ -24,7 +24,11 @@ const page = async () => {
             </div>
           </div>
           <Link href="https://verify.bmdc.org.bd/" target="_blank">
-            <Button variant="destructive" size="sm" className="gap-2 animate-pulse">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2 animate-pulse"
+            >
               <BadgeCheck className="w-4 h-4" />
               Verify BMDC Registration
             </Button>
@@ -35,12 +39,6 @@ const page = async () => {
       <div className=" mx-auto px-4 py-8 space-y-10">
         {/* Add Doctor section */}
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <PlusCircle className="w-4 h-4 text-blue-500" />
-            <h2 className="text-base font-semibold text-gray-700 dark:text-gray-300">
-              Add New Doctor
-            </h2>
-          </div>
           <DoctorControlForm />
         </section>
 
